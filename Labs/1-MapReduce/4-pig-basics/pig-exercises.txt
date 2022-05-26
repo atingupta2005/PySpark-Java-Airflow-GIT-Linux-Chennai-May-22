@@ -1,0 +1,93 @@
+/**
+ * pig exercises
+ *
+ * 
+ *
+ * GSOD data key / readme available at ftp://ftp.ncdc.noaa.gov/pub/data/gsod/readme.txt
+ * Station data available at:  http://www1.ncdc.noaa.gov/pub/data/inventories/ISH-HISTORY.TXT
+ *
+ * 
+*/
+
+// you've probably already done this in a previous exercise, but if not, load:
+hadoop fs -put ~/code-and-data/data/gsod
+// you've probably NOT loaded up the station names data:
+
+
+// fire up the pig grunt terminal:
+pig
+
+// first, load a subset of our GSOD dataset (only the cols we're interested in)
+allDataWithHeaders = LOAD '/user/cloudera/input-data/gsod' AS (row:chararray);
+// this line filters out all the headers
+dataOnly = FILTER allDataWithHeaders BY SIZE(row) > 108L;
+selectColumns = FOREAC dataOnly GENERATE
+	      (int)TRIM(SUBSTRING(row, 0, 6)) AS station,
+	      (int)TRIM(SUBSTRING(row, 7,12)) AS wban,
+	      (int)TRIM(SUBSTRING(row, 14, 22)) AS ymd,
+	      (float)TRIM(SUBSTRING(row, 24, 29)) AS temp_avg,
+	      (float)TRIM(SUBSTRING(row, 102, 107)) AS temp_max,
+	      (float)TRIM(SUBSTRING(row, 110, 115)) AS temp_min,
+	      (float)TRIM(SUBSTRING(row, 78, 82)) AS windspeed_avg,
+	      (float)TRIM(SUBSTRING(row, 95, 99)) AS windspeed_max,
+	      (float)TRIM(SUBSTRING(row, 68, 72)) AS visibility,
+	      (float)TRIM(SUBSTRING(row, 118, 122)) AS precipitation;
+// and also filter out missing data
+hasAllData = FILTER selectColumns by temp_avg < 900.0 AND temp_max < 900.0 AND temp_min < 900.0 AND windspeed_avg < 900.0 AND windspeed_max < 900.0 AND visibility < 900.0 AND precipitation < 100.0;
+STORE hasAllData INTO '/user/cloudera/input-data/gsod-filtered';
+
+// build a sample dataset that contains a 1% dump of our dataset above -- native SAMPLE operator
+// you could then use this dataset to experiment with commands (and will run faster than the full set)
+sampleOnePercent = SAMPLE selectColumns 0.01;
+STORE sampleOnePercent INTO '/user/cloudera/input-data/gsod-one-pct';
+
+// find the hottest recorded temperature in 2014
+// note: you MUST specify the types for each column to sort numerically (otherwise, the
+// results sort alphabetically (99.9 is higher than 100)
+allData = LOAD '/user/cloudera/input-data/gsod-filtered' USING PigStorage('\t') AS (station:int,wban:int,ymd:int,temp_avg:float,temp_max:float,temp_min:float,windspeed_avg:float,windspeed_max:float,visibility:float,precipitation:float);
+hottest = ORDER allData BY $4 DESC;
+maxTemps = LIMIT hottest 50;
+dump maxTemps;
+
+// doesn't mean much without context (what city is station '943020', anyway?)
+// join against ISH dataset -- first load it (in another linux terminal, not GRUNT terminal)
+// on smaller files, standard linux commands serve best
+// DO NOT just copy & paste the 'cut' command below... in the --output-delimiter="", you need to push
+// CTRL-V, then the TAB key inside of those quotes, so "CTRL-V, TAB"
+cut --output-delimiter="" -b1-6,8-12,14-43,47-48,50-51 < ~/code-and-data/data/gsod-stations/ISH-HISTORY.TXT > ~/code-and-data/data/gsod-stations/station-data-only
+hadoop fs -put ~/code-and-data/data/gsod-stations/station-data-only input-data/gsod-stations
+
+// now, back in pig, we can join against this dataset to get the actual station, city and state
+stations = LOAD 'input-data/gsod-stations' USING PigStorage('\t') AS (station:int,wban:int,station_name:chararray,country:chararray,state:chararray);
+joined = JOIN maxTemps BY (station,wban), stations BY (station,wban);
+ordered = ORDER joined BY $4 DESC;
+DUMP ordered;
+
+// now find the hottest recorded temperature in your state (filter would help, no?). windiest day?
+// remember also when doing a join, that your smaller dataset should appear on the left side
+// hottest temp in the nation?
+// cloudiest/foggiest day in your state?
+
+// wettest day closest to your city (did you notice the lat/long part of the station IDs)?
+
+// if you're stuck on the above, here's a hint -- to pull the hottest temperature in only Colorado,
+// you could do:
+coloradoOnly = FILTER stations by (country MATCHES 'US' AND state MATCHES 'CO');
+joined = JOIN coloradoOnly BY (station,wban), allData BY (station,wban);
+ordered = ORDER joined BY $9 DESC; // note that maxTemp is now 10th field!
+DUMP ordered;
+
+// after you've finished, clean up after yourself.
+
+// to exit pig (from the grunt terminal):
+quit
+// then back in linux, remove your datasets
+hadoop fs -rm -r input-data/gsod-filtered
+hadoop fs -rm -r input-data/gsod-one-pct
+hadoop fs -rm -r input-data/gsod-stations
+
+// also check out these resources:
+// some notes on Pig for those used to SQL (probably most of us)
+// http://hortonworks.com/blog/pig-eye-for-the-sql-guy/
+// hadoop tutorials from HortonWorks (esp usefull are the pig 'baseball' ones):
+// http://hortonworks.com/tutorials/

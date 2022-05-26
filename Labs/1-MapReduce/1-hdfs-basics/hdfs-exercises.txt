@@ -1,0 +1,50 @@
+/**
+ * hdfs exercises
+ *
+*/
+
+#cd /tmp
+#wget https://hadoopchennai.blob.core.windows.net/hdfsdata/code-data.zip
+#unzip code-data.zip
+
+# Login to ambari UI with admin ID and create a new user with name - u?
+su u1
+cd /tmp/data
+// get the usage of our 'hadoop fs' commands
+hadoop fs -help
+
+// make a 'input-data' directory
+hadoop fs -mkdir input-data
+// load 'shakespeare' dataset into hdfs:
+hadoop fs -put shakespeare input-data/
+// you may experience an error because the data is already in there (if so, then just leave it)
+// load 'page_view' dataset into hdfs
+hadoop fs -put page_view page_view input-data/
+// load some 'junk' data into hdfs
+hadoop fs -put ~/.bash_history delete-me-later-file
+
+// make a directory in hdfs
+hadoop fs -mkdir delete-me-later-dir
+
+// do a list on our home directory:
+hadoop fs -ls # relative path (to /user/[username])
+hadoop fs -ls /user/u?
+hadoop fs -ls input-data
+
+// delete our junk out
+hadoop fs -rm -r delete-me-later-file
+// says it moved to trash... that's nice!
+hadoop fs -rm -r delete-me-later-dir
+
+// cat some data out
+hadoop fs -cat input-data/shakespeare/poems
+// we can pipe this output in linux just as we're used to piping any STDOUT data
+hadoop fs -cat input-data/shakespeare/poems | less
+
+
+// get something back out of hdfs
+hadoop fs -get input-data/shakespeare/poems
+// browse it & then delete local copy
+head poems
+tail poems
+rm -rf poems

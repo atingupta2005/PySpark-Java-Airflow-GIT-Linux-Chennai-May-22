@@ -1,0 +1,18 @@
+cd /tmp
+wget https://hadoopchennai.blob.core.windows.net/hdfsdata/data.zip
+unzip data.zip
+ls /tmp/data
+
+cd ~
+wget https://hadoopchennai.blob.core.windows.net/hdfsdata/2-wordcount.zip
+unzip 2-wordcount.zip
+cd ~/2-wordcount
+ls
+hdfs fs -ls .
+hadoop jar WordCount.jar WordCount input-data/shakespeare output-wordcount
+
+hadoop fs -ls output-wordcount
+hadoop fs -head output-wordcount/part-r-00000
+
+Open:
+http://vmhadeep21556487.eastus2.cloudapp.azure.com:19888/
