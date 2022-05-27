@@ -1,0 +1,11 @@
+- Refer backfill.py
+- Refer that catchup parameter is set to true
+- We can also change the catchup parameter in airflow.cfg
+- Change date - 02-01-2019 12:30 AM
+- run - ./start.sh
+- Open Airflow UI
+- Turn on the toggle of DAG - backfill
+- Notice that DAG is running multiple runs
+- Change the date - 02-01-2019 00:00 AM
+- Wait 1 min and refresh page
+-  

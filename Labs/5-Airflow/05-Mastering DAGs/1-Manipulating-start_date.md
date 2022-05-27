@@ -1,0 +1,37 @@
+- Open mnt/dags/start_and_schedule_dag.py
+- Notice start date of dag
+- Notice schedule_interval which is set to run every hour
+- Run - start.sh
+- Run - stop.sh
+- Set date just before the start date - 20-03-2019 1:00 AM
+- Run - start.sh
+- Open Airflow UI
+- Enable dag - start_and_schedule_dag
+- Notice DAG will not run as our start date of dag is in future
+- Increase system date - 29-03-2019 00:00 AM
+- Refresh UI and wait
+- DAG should not start as well now
+  - Scheduler runs the DAG once the start date + schedule interval is passed.
+  - Now we are just after the start date but still before end of the scheduling interval
+- Now only change the current time from 00:00 AM to 02:00 AM
+  - Since DAG starts at 1 AM in UTC, we add the schedule_interval which gives 2 AM in UTC
+- Refresh UI after 1 min
+- Now DAG will run. Notice the Execution dates
+- Next Dag run will trigger at 3 AM UTC
+- Change the time to 3 AM UTC
+- Refresh page after 1 min
+- Second DAG Run will now be executed
+- We can also use Timedelta instead of Cron. Change DAG code
+```
+schedule_interval=timedelta(hours=1)
+```
+- Change date to 4 AM
+- Wait and Refresh page
+- We should get the next DAG run triggerred
+- In future we will also se that sometimes start_date and the execution_date of DAG runs may be more than the defined schedule_interval
+- Take a look at the Tree view of the DAG
+- Hover over on one of the circles corresponding to the DAG runs. Notice run date which is the actual date when DAG was executed. Run ID of DAG run. When it started and when it finished.
+- The hours given above the circles corresponds to when the DAG should have been started
+  - These times do not reflect the start dates
+  - They are just logically displayed according to what we have set in DAG for the start_date and schedule_interval parameters
+  - It's possible to have start_date for tasks at 3:15 AM, but the time at top at 2 AM
