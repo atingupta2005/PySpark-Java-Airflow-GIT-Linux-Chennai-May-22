@@ -1,0 +1,28 @@
+sudo apt-get -y install libmysqlclient-dev
+sudo apt-get -y install libssl-dev
+sudo apt-get -y install libkrb5-dev
+
+mkdir /airflow
+chmod a+rwx /airflow
+cd /airflow
+python3 -m venv venv
+source ./venv/bin/activate
+pip install "apache-airflow[celery]==2.3.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.3.1/constraints-3.7.txt"
+pip install typing_extensions
+export AIRFLOW_HOME=/airflow
+airflow db init
+tree .
+
+airflow users create --role Admin --username admin --email admin --firstname admin --lastname admin --password admin
+
+airflow users list
+
+# start the web server, default port is 8080
+airflow webserver -p 8080
+
+# start the scheduler, should be ran in a separate window
+airflow scheduler
+
+curl localhost:8080
+
+
