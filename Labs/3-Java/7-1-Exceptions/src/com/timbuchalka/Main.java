@@ -6,13 +6,16 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-//        int x = 98;
-//        int y = 0;
-//        System.out.println(divideLBYL(x, y));
-//        System.out.println(divideEAFP(x, y));
-//        System.out.println(divide(x, y));
-        int x = getIntEAFP();
-        System.out.println("x is " + x);
+        int x1 = getIntEAFP();
+        System.out.println("x1 is " + x1);
+        
+        int y1 = getIntLBYL();
+        System.out.println("y1 is " + y1);
+        
+        
+        System.out.println(divideLBYL(x1, y1));
+        System.out.println(divideEAFP(x1, y1));
+        System.out.println(divide(x1, y1));
     }
 
     private static int getInt() {
