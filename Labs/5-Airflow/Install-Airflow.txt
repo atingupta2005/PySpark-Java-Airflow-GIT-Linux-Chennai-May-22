@@ -1,28 +1,51 @@
-sudo apt-get -y install libmysqlclient-dev
-sudo apt-get -y install libssl-dev
-sudo apt-get -y install libkrb5-dev
+# Install Airflow using Python PIP
+- Refer:
+    - https://towardsdatascience.com/an-introduction-to-apache-airflow-21111bf98c1f
 
-mkdir /airflow
-chmod a+rwx /airflow
-cd /airflow
-python3 -m venv venv
-source ./venv/bin/activate
-pip install "apache-airflow[celery]==2.3.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.3.1/constraints-3.7.txt"
-pip install typing_extensions
-export AIRFLOW_HOME=/airflow
+```
+sudo apt install -y python3-venv
+python3 -m ~/venv my_venv
+```
+
+```
+source ~/my_venv/bin/activate
+```
+
+```
+mkdir ~/airflow
+cd ~/airflow
+```
+
+```
+pip install "apache-airflow[celery]==2.3.2" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.3.2/constraints-3.7.txt"
+```
+
+```
 airflow db init
-tree .
+```
 
-airflow users create --role Admin --username admin --email admin --firstname admin --lastname admin --password admin
+```
+airflow users create       --role Admin       --username admin       --email admin       --firstname admin       --lastname admin       --password admin
+```
 
+```
 airflow users list
+```
 
-# start the web server, default port is 8080
-airflow webserver -p 8080
+```
+export AIRFLOW_HOME=/home/atingupta2005/airflow
+```
 
-# start the scheduler, should be ran in a separate window
-airflow scheduler
 
+```
+cd ~/airflow
+nohup airflow scheduler &
+```
+
+```
+nohup airflow webserver &
+```
+
+```
 curl localhost:8080
-
-
+```
